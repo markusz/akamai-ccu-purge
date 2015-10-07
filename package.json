@@ -1,0 +1,37 @@
+{
+  "name": "akamai-ccu-purge",
+  "description": "A lightweight module to purge Akamai Edge content using the CCU v2 API",
+  "version": "0.1.0",
+  "private": false,
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:markusz/akamai-ccu-purge.git"
+  },
+  "keywords": [
+    "akamai",
+    "open",
+    "authentication",
+    "api",
+    "ccu",
+    "purge"
+  ],
+  "author": {
+    "name": "Markus Ziller <mail.markus.ziller@gmail.com>"
+  },
+  "scripts": {
+    "test": "mocha ./test/ --recursive",
+    "lint": "jscs ./src && jshint ./src "
+  },
+  "devDependencies": {
+    "chai": "^3.2.0",
+    "jscs": "^2.1.1",
+    "jshint": "^2.6.3"
+  },
+  "dependencies": {
+    "log4js": "^0.6.22",
+    "moment": "^2.10.6",
+    "node-uuid": "^1.4.3",
+    "lodash": "^3.10.1",
+    "superagent": "^1.4.0"
+  }
+}
