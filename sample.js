@@ -13,7 +13,7 @@ var objects = [
   'your.url.com/some/path/to/invalidate/..'
 ];
 
-var Purger = new PurgerFactory.create(config);
+var Purger = PurgerFactory.create(config);
 
 Purger.purgeObjects(objects, function(err, res) {
   //do something with the request, i.e log
