@@ -53,7 +53,10 @@ Authenticator.prototype.canonicalizeHeaders = function (request) {
 	});
 
 	each(this.headersToSign, function (header) {
-		newHeaders.push(header.toLowerCase() + ':' + cleansedHeaders[header.toLowerCase()]);
+		var headerName = header.toLowerCase();
+		var cleansedHeaderValue = cleansedHeaders[headerName];
+
+		newHeaders.push(headerName + ':' + cleansedHeaderValue);
 	});
 
 	newHeaders = newHeaders.join('\t');
