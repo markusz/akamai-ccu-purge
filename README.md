@@ -26,4 +26,4 @@ Purger.purgeObjects(objects, function(err, res) {
   //do something with the request, i.e log
   console.log(res.body);
 });
-``
+```
