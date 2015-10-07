@@ -120,6 +120,36 @@ describe('auth.js', function () {
 				expect(hash3).to.eql(expectedHash3);
 			});
 		});
+
+		describe('.canonicalizeHeaders', function () {
+			it('is a function', function () {
+				assert.isFunction(defaultInstance.canonicalizeHeaders);
+			});
+		});
+
+		describe('.makeContentHash', function () {
+			it('is a function', function () {
+				assert.isFunction(defaultInstance.makeContentHash);
+			});
+		});
+
+		describe('.makeDataToSign', function () {
+			it('is a function', function () {
+				assert.isFunction(defaultInstance.makeDataToSign);
+			});
+		});
+
+		describe('.generateSignature', function () {
+			it('is a function', function () {
+				assert.isFunction(defaultInstance.generateSignature);
+			});
+		});
+
+		describe('.generateAuthHeaderForRequest', function () {
+			it('is a function', function () {
+				assert.isFunction(defaultInstance.generateAuthHeaderForRequest);
+			});
+		});
 	});
 });
 
