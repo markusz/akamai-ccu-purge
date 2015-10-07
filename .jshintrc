@@ -1,0 +1,18 @@
+{
+  "node": true,
+  "eqnull": true,
+  "strict": true,
+  "globals": {
+    "describe": true,
+    "it": true,
+    "expect": true,
+    "sinon": true,
+    "beforeEach": true,
+    "before": true,
+    "afterEach": true,
+    "after": true,
+    "define": true
+  },
+  "undef": true,
+  "unused": true
+}

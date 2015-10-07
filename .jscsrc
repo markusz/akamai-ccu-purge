@@ -1,0 +1,13 @@
+{
+  "preset": "google",
+  "maximumLineLength": 300,
+  "requireCamelCaseOrUpperCaseIdentifiers": "ignoreProperties",
+  "disallowSpacesInsideObjectBrackets": null,
+  "disallowMultipleVarDecl": "exceptUndefined",
+  "excludeFiles": [
+    ".idea/**",
+    "node_modules/**",
+    "test.js",
+    "sample.js"
+  ]
+}
