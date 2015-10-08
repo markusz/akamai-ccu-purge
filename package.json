@@ -20,7 +20,8 @@
   },
   "scripts": {
     "test": "mocha ./test/ --recursive",
-    "lint": "jscs ./src && jshint ./src "
+    "lint": "jscs ./src && jshint ./src",
+    "pre-push": "npm run lint && npm test"
   },
   "devDependencies": {
     "chai": "^3.3.0",
