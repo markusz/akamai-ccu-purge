@@ -7,7 +7,7 @@ var CCU_PATH = 'ccu/v2/queues/default';
 
 var Purger = function(config) {
   this.config = config;
-  this.endpoint = config.host + CCU_PATH;
+  this.defaultQueueEndpoint = config.host + '/' + CCU_PATH;
   this.authenticator = new Authenticator(config);
 };
 
@@ -18,7 +18,7 @@ Purger.prototype.purgeObjects = function(objects, cb) {
 
   var request = {
     path: CCU_PATH,
-    url: this.endpoint,
+    url: this.defaultQueueEndpoint,
     method: 'POST',
     headers: {
       'content-type': 'application/json',
@@ -30,13 +30,43 @@ Purger.prototype.purgeObjects = function(objects, cb) {
   var authHeader = this.authenticator.generateAuthHeaderForRequest(request);
 
   superagent
-    .post(this.endpoint)
+    .post(this.defaultQueueEndpoint)
     .set('Authorization', authHeader)
     .set('content-type', 'application/json')
     .send(objectsForBody)
-    .end(function(err, res) {
-      cb(err, res);
-    });
+    .end(cb);
+};
+
+Purger.prototype.checkPurgeStatus = function(progressUri, cb) {
+  var endpoint = this.config.host + progressUri;
+
+  var request = {
+    path: progressUri,
+    url: endpoint,
+    method: 'GET'
+  };
+
+  var authHeader = this.authenticator.generateAuthHeaderForRequest(request);
+
+  superagent
+    .get(endpoint)
+    .set('Authorization', authHeader)
+    .end(cb);
+};
+
+Purger.prototype.checkQueueLength = function(cb) {
+  var request = {
+    path: CCU_PATH,
+    url: this.defaultQueueEndpoint,
+    method: 'GET'
+  };
+
+  var authHeader = this.authenticator.generateAuthHeaderForRequest(request);
+
+  superagent
+    .get(this.defaultQueueEndpoint)
+    .set('Authorization', authHeader)
+    .end(cb);
 };
 
 module.exports = Purger;
