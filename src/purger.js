@@ -21,7 +21,8 @@ Purger.prototype.purgeObjects = function(objects, cb) {
     url: this.endpoint,
     method: 'POST',
     headers: {
-      'content-type': 'application/json'
+      'content-type': 'application/json',
+      'content-length': objectsForBody.length
     },
     body: objectsForBody
   };

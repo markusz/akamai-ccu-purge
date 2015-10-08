@@ -14,117 +14,115 @@ var MAX_BODY_DEFAULT = 2000000;
 var AUTH_HEADER = 'EG1-HMAC-SHA256 ';
 var HEADERS_TO_SIGN_DEFAULT = [];
 
-var Authenticator = function (config) {
-	this.config = config;
-	this.maxBody = config.maxBody || MAX_BODY_DEFAULT;
-	this.headersToSign = config.headersToSign || HEADERS_TO_SIGN_DEFAULT;
+var Authenticator = function(config) {
+  this.config = config;
+  this.maxBody = config.maxBody || MAX_BODY_DEFAULT;
+  this.headersToSign = config.headersToSign || HEADERS_TO_SIGN_DEFAULT;
 };
 
-Authenticator.prototype.createTimestamp = function () {
-	return moment().utc().format(TIME_FORMAT);
+Authenticator.prototype.createTimestamp = function() {
+  return moment().utc().format(TIME_FORMAT);
 };
 
-Authenticator.prototype.toSHA256Hmac = function (data, key) {
-	var hmac = crypto.createHmac('sha256', key);
-	hmac.update(data);
-	return hmac.digest('base64');
+Authenticator.prototype.toSHA256Hmac = function(data, key) {
+  var hmac = crypto.createHmac('sha256', key);
+  hmac.update(data);
+  return hmac.digest('base64');
 };
 
-Authenticator.prototype.toSHA256Hash = function (data) {
-	var hash = crypto.createHash('sha256');
-	hash.update(data);
-	return hash.digest('base64');
+Authenticator.prototype.toSHA256Hash = function(data) {
+  var hash = crypto.createHash('sha256');
+  hash.update(data);
+  return hash.digest('base64');
 };
 
-Authenticator.prototype.canonicalizeHeaders = function (request) {
-	var newHeaders = [];
-	var cleansedHeaders = {};
+Authenticator.prototype.canonicalizeHeaders = function(request) {
+  var newHeaders = [];
+  var cleansedHeaders = {};
 
-	each(request.headers, function (value, header) {
-		if (value) {
-			header = header.toLowerCase();
-			if (isString(value)) {
-				value = value.trim();
-				value = value.replace(/\s+/g, ' ');
-			}
+  each(request.headers, function(value, header) {
+    if (value) {
+      header = header.toLowerCase();
+      if (isString(value)) {
+        value = value.trim();
+        value = value.replace(/\s+/g, ' ');
+      }
 
-			cleansedHeaders[header.toLowerCase()] = value;
-		}
-	});
+      cleansedHeaders[header.toLowerCase()] = value;
+    }
+  });
 
-	each(this.headersToSign, function (header) {
-		var headerName = header.toLowerCase();
-		var cleansedHeaderValue = cleansedHeaders[headerName];
+  each(this.headersToSign, function(header) {
+    var headerName = header.toLowerCase();
+    var cleansedHeaderValue = cleansedHeaders[headerName];
 
-		newHeaders.push(headerName + ':' + cleansedHeaderValue);
-	});
+    newHeaders.push(headerName + ':' + cleansedHeaderValue);
+  });
 
-	newHeaders = newHeaders.join('\t');
-	return newHeaders;
+  newHeaders = newHeaders.join('\t');
+  return newHeaders;
 };
 
-Authenticator.prototype.makeContentHash = function (request) {
-	request.headers['content-length'] = request.body.length;
+Authenticator.prototype.makeContentHash = function(request) {
+  var contentHash = '';
+  var processedBody = request.body || '';
 
-	var contentHash = '';
-	var processedBody = request.body || '';
+  if (request.method == 'POST' && processedBody.length > 0) {
+    if (processedBody.length > this.maxBody) {
+      processedBody = processedBody.substring(0, this.maxBody);
+    }
+    contentHash = this.toSHA256Hash(processedBody);
+  }
 
-	if (request.method == 'POST' && processedBody.length > 0) {
-		if (processedBody.length > this.maxBody) {
-			processedBody = processedBody.substring(0, this.maxBody);
-		}
-		contentHash = this.toSHA256Hash(processedBody);
-	}
-
-	return contentHash;
+  return contentHash;
 };
 
-Authenticator.prototype.makeDataToSign = function (request, authHeader) {
+Authenticator.prototype.makeDataToSign = function(request, authHeader) {
 
-	var parsedURL = url.parse(request.url, true);
-	var canonicalizedHeaders = this.canonicalizeHeaders(request);
-	var contentHash = this.makeContentHash(request);
+  var parsedURL = url.parse(request.url, true);
+  var canonicalizedHeaders = this.canonicalizeHeaders(request);
+  var contentHash = this.makeContentHash(request);
 
-	var dataForSigning = [
-		request.method.toUpperCase(),
-		parsedURL.protocol.replace(':', ''),
-		parsedURL.host,
-		parsedURL.path,
-		canonicalizedHeaders,
-		contentHash,
-		authHeader
-	].join('\t').toString();
+  var dataForSigning = [
+    request.method.toUpperCase(),
+    parsedURL.protocol.replace(':', ''),
+    parsedURL.host,
+    parsedURL.path,
+    canonicalizedHeaders,
+    contentHash,
+    authHeader
+  ].join('\t').toString();
 
-	return dataForSigning;
+  return dataForSigning;
 };
 
-Authenticator.prototype.generateSignature = function (request, timestamp, clientSecret, authHeader) {
-	var dataToSign = this.makeDataToSign(request, authHeader);
-	var signingKey = this.toSHA256Hmac(timestamp, clientSecret);
+Authenticator.prototype.generateSignature = function(request, clientSecret, authHeader, timestamp) {
+  var dataToSign = this.makeDataToSign(request, authHeader);
+  var signingKey = this.toSHA256Hmac(timestamp, clientSecret);
 
-	return this.toSHA256Hmac(dataToSign, signingKey);
+  return this.toSHA256Hmac(dataToSign, signingKey);
 };
 
-Authenticator.prototype.generateAuthHeaderForRequest = function (request) {
-	var guid = uuid.v4();
-	var timestamp = this.createTimestamp();
+Authenticator.prototype.generateAuthHeaderForRequest = function(request) {
+  var guid = uuid.v4();
+  var timestamp = this.createTimestamp();
 
-	var authHeaderPairs = {
-		'client_token': this.config.clientToken,
-		'access_token': this.config.accessToken,
-		'timestamp': timestamp,
-		'nonce': guid
-	};
+  var authHeaderPairs = {
+    'client_token': this.config.clientToken,
+    'access_token': this.config.accessToken,
+    'timestamp': timestamp,
+    'nonce': guid
+  };
 
-	var authHeader = AUTH_HEADER;
-	each(authHeaderPairs, function (value, key) {
-		authHeader += key + '=' + value + ';';
-	});
+  var authHeader = AUTH_HEADER;
+  each(authHeaderPairs, function(value, key) {
+    authHeader += key + '=' + value + ';';
+  });
 
-	var signature = this.generateSignature(request, timestamp, this.config.clientSecret, authHeader);
-	var signedAuthHeader = authHeader + 'signature=' + signature;
+  var signature = this.generateSignature(request, this.config.clientSecret, authHeader, timestamp);
+  var signedAuthHeader = authHeader + 'signature=' + signature;
 
-	return signedAuthHeader;
+  return signedAuthHeader;
 };
 
 module.exports = Authenticator;
