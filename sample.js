@@ -4,7 +4,7 @@ var config = {
   clientToken: 'yourClientToken',
   clientSecret: 'yourClientSecret',
   accessToken: 'yourAccessToken',
-  host: 'yourHost' //typically something like 'https://xxxx-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxx.purge.akamaiapis.net/, the "/" at the end is important'
+  host: 'yourHost' //typically something like 'https://xxxx-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxx.purge.akamaiapis.net', no trailing "/"
 };
 
 var objects = [
@@ -16,6 +16,11 @@ var objects = [
 var Purger = PurgerFactory.create(config);
 
 Purger.purgeObjects(objects, function(err, res) {
-  //do something with the request, i.e log
-  console.log(res.body);
+  console.log('Purge Result:', res.body);
+  Purger.checkPurgeStatus(res.body.progressUri, function(err, res) {
+    console.log('Purge Status', res.body);
+    Purger.checkQueueLength(function(err, res) {
+      console.log('Queue Length', res.body);
+    });
+  });
 });
