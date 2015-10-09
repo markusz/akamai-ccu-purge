@@ -2,7 +2,10 @@
 
 A lightweight module to purge Akamai Edge content using the CCU v2 API
 
-See https://api.ccu.akamai.com/ccu/v2/docs/
+For API details see 
+
+* https://api.ccu.akamai.com/ccu/v2/docs/ 
+* https://developer.akamai.com/introduction/Client_Auth.html
 
 ### Usage
 
