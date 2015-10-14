@@ -2,4 +2,9 @@
 *.iml
 node_modules
 test.js
+/coverage/lcov-report/*
+/coverage/lcov-report/src/*
+/coverage/lcov.info
+/coverage/coverage.json
+!/coverage/lcov-report/index.html
 npm-debug.log

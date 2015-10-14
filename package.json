@@ -20,7 +20,8 @@
   "scripts": {
     "test": "mocha ./test/ --recursive",
     "lint": "jscs ./src && jshint ./src",
-    "pre-push": "npm run lint && npm test"
+    "pre-push": "npm run lint && npm test",
+    "test-coverage": "node_modules/istanbul/lib/cli.js cover ./node_modules/mocha/bin/_mocha ./test -- --recursive"
   },
   "devDependencies": {
     "chai": "^3.3.0",
@@ -28,7 +29,8 @@
     "sinon": "^1.14.1",
     "sinon-chai": "^2.8.0",
     "jscs": "^2.1.1",
-    "jshint": "^2.6.3"
+    "jshint": "^2.6.3",
+    "istanbul": "^0.3.22"
   },
   "dependencies": {
     "moment": "^2.10.6",
