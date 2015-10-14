@@ -4,15 +4,15 @@ var uuid = require('node-uuid');
 var moment = require('moment');
 var crypto = require('crypto');
 var lodash = require('lodash');
+var url = require('url');
 
 var each = lodash.each;
 var isString = lodash.isString;
-var url = require('url');
 
-var TIME_FORMAT = 'YYYYMMDDTHH:mm:ss+0000';
-var MAX_BODY_DEFAULT = 2000000;
 var AUTH_HEADER = 'EG1-HMAC-SHA256 ';
 var HEADERS_TO_SIGN_DEFAULT = [];
+var TIME_FORMAT = 'YYYYMMDDTHH:mm:ss+0000';
+var MAX_BODY_DEFAULT = 2000000;
 
 var Authenticator = function(config) {
   this.config = config;
@@ -64,17 +64,17 @@ Authenticator.prototype.canonicalizeHeaders = function(request) {
 };
 
 Authenticator.prototype.makeContentHash = function(request) {
-  var contentHash = '';
   var processedBody = request.body || '';
 
-  if (request.method == 'POST' && processedBody.length > 0) {
-    if (processedBody.length > this.maxBody) {
-      processedBody = processedBody.substring(0, this.maxBody);
-    }
-    contentHash = this.toSHA256Hash(processedBody);
+  if (request.method != 'POST' || processedBody.length < 1) {
+    return '';
   }
 
-  return contentHash;
+  if (processedBody.length > this.maxBody) {
+    processedBody = processedBody.substring(0, this.maxBody);
+  }
+
+  return this.toSHA256Hash(processedBody);
 };
 
 Authenticator.prototype.makeDataToSign = function(request, authHeader) {
@@ -91,9 +91,9 @@ Authenticator.prototype.makeDataToSign = function(request, authHeader) {
     canonicalizedHeaders,
     contentHash,
     authHeader
-  ].join('\t').toString();
+  ];
 
-  return dataForSigning;
+  return dataForSigning.join('\t').toString();
 };
 
 Authenticator.prototype.generateSignature = function(request, clientSecret, authHeader, timestamp) {
@@ -104,19 +104,19 @@ Authenticator.prototype.generateSignature = function(request, clientSecret, auth
 };
 
 Authenticator.prototype.generateAuthHeaderForRequest = function(request) {
-  var guid = uuid.v4();
   var timestamp = this.createTimestamp();
 
   var authHeaderPairs = {
     'client_token': this.config.clientToken,
     'access_token': this.config.accessToken,
     'timestamp': timestamp,
-    'nonce': guid
+    'nonce': uuid.v4()
   };
 
   var authHeader = AUTH_HEADER;
   each(authHeaderPairs, function(value, key) {
-    authHeader += key + '=' + value + ';';
+    var headerPair = key + '=' + value + ';';
+    authHeader += headerPair;
   });
 
   var signature = this.generateSignature(request, this.config.clientSecret, authHeader, timestamp);
